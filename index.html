@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal CIAD - Centro Integrado de Atendimento e Despacho</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --cor-primaria: #c41e3a;
+            --cor-secundaria: #8B0000;
+            --cor-fundo: #f5f5f5;
+            --cor-texto: #333333;
+            --cor-texto-claro: #ffffff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--cor-fundo);
+            color: var(--cor-texto);
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .header-ciad {
+            background: linear-gradient(135deg, var(--cor-primaria) 0%, var(--cor-secundaria) 100%);
+            color: var(--cor-texto-claro);
+            padding: 20px 0;
+            box-shadow: 0 4px 15px rgba(196, 30, 58, 0.3);
+        }
+        
+        .logo-gov {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .titulo-principal {
+            font-size: 2rem;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+        
+        .subtitulo {
+            font-size: 1rem;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+        
+        /* Seção Boas-vindas */
+        .welcome-section {
+            background: white;
+            padding: 60px 0;
+            margin: 40px 0;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .welcome-title {
+            color: var(--cor-primaria);
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+        
+        .welcome-text {
+            font-size: 1.1rem;
+            color: var(--cor-texto);
+            margin-bottom: 30px;
+            line-height: 1.7;
+        }
+        
+        .btn-helpdesk {
+            background: var(--cor-primaria);
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(196, 30, 58, 0.3);
+        }
+        
+        .btn-helpdesk:hover {
+            background: var(--cor-secundaria);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(196, 30, 58, 0.4);
+            color: white;
+        }
+        
+        /* Cards de Sistemas */
+        .systems-section {
+            padding: 60px 0;
+        }
+        
+        .section-title {
+            color: var(--cor-primaria);
+            font-size: 2rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 50px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .system-card {
+            background: white;
+            border: none;
+            border-radius: 15px;
+            padding: 30px 20px;
+            text-align: center;
+            transition: all 0.4s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            height: 100%;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .system-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--cor-primaria), var(--cor-secundaria));
+            transition: left 0.4s ease;
+            z-index: 1;
+        }
+        
+        .system-card:hover::before {
+            left: 0;
+        }
+        
+        .system-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(196, 30, 58, 0.2);
+        }
+        
+        .system-card:hover .card-content {
+            color: white;
+            z-index: 2;
+        }
+        
+        .card-content {
+            position: relative;
+            z-index: 2;
+            transition: color 0.4s ease;
+        }
+        
+        .system-icon {
+            font-size: 3rem;
+            color: var(--cor-primaria);
+            margin-bottom: 20px;
+            transition: color 0.4s ease;
+        }
+        
+        .system-card:hover .system-icon {
+            color: white;
+        }
+        
+        .system-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--cor-texto);
+        }
+        
+        .system-desc {
+            font-size: 0.95rem;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .system-card:hover .system-name,
+        .system-card:hover .system-desc {
+            color: white;
+        }
+        
+        /* Seção Avisos e Recursos */
+        .info-section {
+            padding: 60px 0;
+            background: white;
+            margin: 40px 0;
+            border-radius: 15px;
+        }
+        
+        .info-panel {
+            background: #f8f9fa;
+            border-left: 5px solid var(--cor-primaria);
+            padding: 30px;
+            border-radius: 10px;
+            height: 100%;
+        }
+        
+        .info-title {
+            color: var(--cor-primaria);
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .info-text {
+            color: var(--cor-texto);
+            line-height: 1.6;
+        }
+        
+        .resource-link {
+            color: var(--cor-primaria);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .resource-link:hover {
+            color: var(--cor-secundaria);
+            text-decoration: underline;
+        }
+        
+        /* Footer */
+        .footer-ciad {
+            background: #2c3e50;
+            color: white;
+            padding: 40px 0 20px;
+            margin-top: 60px;
+        }
+        
+        .footer-highlight {
+            background: var(--cor-primaria);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .footer-phone {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .footer-warning {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        /* Tag para módulos futuros */
+        .coming-soon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ffc107;
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            z-index: 3;
+        }
+        
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .titulo-principal {
+                font-size: 1.5rem;
+            }
+            
+            .welcome-title {
+                font-size: 1.8rem;
+            }
+            
+            .system-card {
+                margin-bottom: 20px;
+            }
+            
+            .section-title {
+                font-size: 1.6rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .header-ciad {
+                text-align: center;
+            }
+            
+            .titulo-principal {
+                font-size: 1.3rem;
+            }
+            
+            .welcome-title {
+                font-size: 1.5rem;
+            }
+            
+            .btn-helpdesk {
+                padding: 12px 25px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header-ciad">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <div class="logo-gov">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        GOVERNO MG
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <h1 class="titulo-principal mb-0">Portal CIAD</h1>
+                    <h2 class="subtitulo">Centro Integrado de Atendimento e Despacho</h2>
+                    <p class="mb-0"><small>Sistema Integrado de Segurança Pública - Minas Gerais</small></p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Seção Boas-vindas -->
+    <div class="container">
+        <section class="welcome-section">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-10 text-center">
+                        <h2 class="welcome-title">
+                            <i class="fas fa-home me-3"></i>
+                            Bem-vindo ao Portal do CIAD
+                        </h2>
+                        <p class="welcome-text">
+                            Este portal centraliza o acesso aos sistemas, protocolos e recursos utilizados pelos 
+                            teleatendentes dos números de emergência <strong>190</strong>, <strong>193</strong> e <strong>197</strong>. 
+                            Aqui você encontra todas as ferramentas necessárias para um atendimento eficiente e integrado.
+                        </p>
+                        <a href="tel:08002830190" class="btn btn-helpdesk">
+                            <i class="fas fa-phone me-2"></i>
+                            HelpDesk SISP - 0800 2830 190
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Seção Sistemas -->
+    <section class="systems-section">
+        <div class="container">
+            <h2 class="section-title">
+                <i class="fas fa-desktop me-3"></i>
+                Escolha o Sistema que Deseja Acessar
+            </h2>
+            
+            <!-- Sistemas Existentes -->
+            <div class="row g-4 mb-5">
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="system-card" onclick="window.open('https://web.sids.mg.gov.br/reds', '_blank')">
+                        <div class="card-content">
+                            <i class="fas fa-file-alt system-icon"></i>
+                            <h4 class="system-name">REDS</h4>
+                            <p class="system-desc">Registro de Eventos de Defesa Social</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="system-card" onclick="window.open('https://web.sids.mg.gov.br/ddu/', '_blank')">
+                        <div class="card-content">
+                            <i class="fas fa-phone-volume system-icon"></i>
+                            <h4 class="system-name">DDU</h4>
+                            <p class="system-desc">Disque-Denúncia Unificado</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="system-card" onclick="window.open('https://web.sids.mg.gov.br/escala', '_blank')">
+                        <div class="card-content">
+                            <i class="fas fa-calendar-alt system-icon"></i>
+                            <h4 class="system-name">Escala de Serviços</h4>
+                            <p class="system-desc">Gestão de escalas</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="system-card" onclick="window.open('https://web.sids.mg.gov.br/escala2', '_blank')">
+                        <div class="card-content">
+                            <i class="fas fa-clock system-icon"></i>
+                            <h4 class="system-name">Banco de Horas</h4>
+                            <p class="system-desc">Relatórios e banco de horas</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="system-card" onclick="window.open('https://diao.sids.mg.gov.br/', '_blank')">
+                        <div class="card-content">
+                            <i class="fas fa-directions system-icon"></i>
+                            <h4 class="system-name">DIAO</h4>
+                            <p class="system-desc">Diretriz Integrada de Ações e Operações</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="system-card" onclick="window.open('https://web.sids.mg.gov.br/sidsadm', '_blank')">
+                        <div class="card-content">
+                            <i class="fas fa-users-cog system-icon"></i>
+                            <h4 class="system-name">SIDS-Adm</h4>
+                            <p class="system-desc">Gestão de usuários e autorização</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="system-card" onclick="window.open('https://web.sids.mg.gov.br/sidsconfig', '_blank')">
+                        <div class="card-content">
+                            <i class="fas fa-cogs system-icon"></i>
+                            <h4 class="system-name">SIDS-Config</h4>
+                            <p class="system-desc">Gestão de dados básicos</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="system-card" onclick="window.open('https://web.sids.mg.gov.br/sidsconfig2/', '_blank')">
+                        <div class="card-content">
+                            <i class="fas fa-tools system-icon"></i>
+                            <h4 class="system-name">SIDS-Config v2</h4>
+                            <p class="system-desc">Gestão de dados básicos (nova versão)</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="system-card" onclick="window.open('https://web.sids.mg.gov.br/relatorios-sids/', '_blank')">
+                        <div class="card-content">
+                            <i class="fas fa-chart-bar system-icon"></i>
+                            <h4 class="system-name">Relatórios</h4>
+                            <p class="system-desc">Relatórios processados periodicamente</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="system-card" onclick="window.open('https://emergencia.mg.gov.br', '_blank')">
+                        <div class="card-content">
+                            <i class="fas fa-exclamation-triangle system-icon"></i>
+                            <h4 class="system-name">Emergência MG</h4>
+                            <p class="system-desc">Portal de emergência via internet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Novos Módulos (Em Desenvolvimento) -->
+            <h3 class="text-center mb-4" style="color: var(--cor-primaria); font-weight: 600;">
+                <i class="fas fa-plus-circle me-2"></i>
+                Novos Módulos em Desenvolvimento
+            </h3>
+            
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="system-card" style="opacity: 0.8; cursor: not-allowed;">
+                        <div class="coming-soon">Em Breve</div>
+                        <div class="card-content">
+                            <i class="fas fa-clipboard-list system-icon"></i>
+                            <h4 class="system-name">Protocolos de Atendimento</h4>
+                            <p class="system-desc">Protocolos de atendimento integrados</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="system-card" style="opacity: 0.8; cursor: not-allowed;">
+                        <div class="coming-soon">Em Breve</div>
+                        <div class="card-content">
+                            <i class="fas fa-shield-alt system-icon"></i>
+                            <h4 class="system-name">Scripts 190</h4>
+                            <p class="system-desc">Scripts de atendimento Polícia Militar</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="system-card" style="opacity: 0.8; cursor: not-allowed;">
+                        <div class="coming-soon">Em Breve</div>
+                        <div class="card-content">
+                            <i class="fas fa-fire system-icon"></i>
+                            <h4 class="system-name">Scripts 193</h4>
+                            <p class="system-desc">Scripts de atendimento Bombeiros</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="system-card" style="opacity: 0.8; cursor: not-allowed;">
+                        <div class="coming-soon">Em Breve</div>
+                        <div class="card-content">
+                            <i class="fas fa-search system-icon"></i>
+                            <h4 class="system-name">Scripts 197</h4>
+                            <p class="system-desc">Scripts de atendimento Polícia Civil</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="system-card" style="opacity: 0.8; cursor: not-allowed;">
+                        <div class="coming-soon">Em Breve</div>
+                        <div class="card-content">
+                            <i class="fas fa-graduation-cap system-icon"></i>
+                            <h4 class="system-name">Treinamentos</h4>
+                            <p class="system-desc">Material de treinamento e capacitação</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Seção Avisos e Recursos -->
+    <div class="container">
+        <section class="info-section">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="info-panel">
+                            <h3 class="info-title">
+                                <i class="fas fa-bullhorn me-2"></i>
+                                Avisos e Comunicados
+                            </h3>
+                            <div class="info-text">
+                                <div class="alert alert-info mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Portal em constante evolução:</strong> Novos módulos e funcionalidades serão adicionados regularmente.
+                                </div>
+                                <div class="alert alert-warning mb-3">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Manutenção programada:</strong> Consulte os horários de manutenção dos sistemas.
+                                </div>
+                                <div class="alert alert-success mb-0">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <strong>Suporte 24h:</strong> HelpDesk disponível para teleatendentes SISP.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <div class="info-panel">
+                            <h3 class="info-title">
+                                <i class="fas fa-life-ring me-2"></i>
+                                Recursos e Suporte
+                            </h3>
+                            <div class="info-text">
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <i class="fas fa-desktop me-2" style="color: var(--cor-primaria);"></i>
+                                        <a href="#" class="resource-link">Requisitos de Sistema</a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-cog me-2" style="color: var(--cor-primaria);"></i>
+                                        <a href="#" class="resource-link">Configurações Recomendadas</a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-book me-2" style="color: var(--cor-primaria);"></i>
+                                        <a href="#" class="resource-link">Documentação Técnica</a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-user-plus me-2" style="color: var(--cor-primaria);"></i>
+                                        <a href="#" class="resource-link">Ativação de Conta</a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-network-wired me-2" style="color: var(--cor-primaria);"></i>
+                                        <a href="#" class="resource-link">Áreas Integradas</a>
+                                    </li>
+                                    <li class="mb-0">
+                                        <i class="fas fa-question-circle me-2" style="color: var(--cor-primaria);"></i>
+                                        <a href="#" class="resource-link">FAQ - Perguntas Frequentes</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-ciad">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="footer-highlight">
+                        <div class="footer-phone">
+                            <i class="fas fa-phone me-3"></i>
+                            0800 2830 190
+                        </div>
+                        <div class="footer-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Atenção! O HelpDesk é exclusivo para servidores do SISP e não deve ser repassado para o público externo
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-building me-2"></i>Centro Integrado de Atendimento e Despacho - CIAD</h5>
+                    <p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i>Cidade Administrativa - Belo Horizonte/MG</p>
+                    <p class="mb-1"><i class="fas fa-phone me-2"></i>Emergências: 190 | 193 | 197</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-1"><i class="fas fa-shield-alt me-2"></i>Sistema Integrado de Segurança Pública</p>
+                    <p class="mb-1"><i class="fas fa-calendar me-2"></i>Suporte Técnico: 24 horas</p>
+                    <p class="mb-0"><small>&copy; 2024 Governo de Minas Gerais - Todos os direitos reservados</small></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Função para destacar cards ao passar o mouse
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.system-card');
+            
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-8px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+            
+            // Alerta para módulos em desenvolvimento
+            const comingSoonCards = document.querySelectorAll('.system-card[style*="opacity: 0.8"]');
+            comingSoonCards.forEach(card => {
+                card.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    alert('Este módulo está em desenvolvimento e será disponibilizado em breve!');
+                });
+            });
+        });
+        
+        // Smooth scroll para links internos
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
