@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Roteiros 193 - CBMMG</title>
+    <!-- Carregamento do Tailwind CSS para layout responsivo e moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cor-principal: #D72828; /* Vermelho Bombeiros */
+            --cor-secundaria: #374151; /* Cinza Escuro */
+            --cor-fundo: #F9FAFB;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--cor-fundo);
+        }
+
+        .sidebar {
+            background-color: #ffffff;
+            border-right: 1px solid #E5E7EB;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+            min-height: 100vh;
+        }
+
+        .content-area {
+            background-color: var(--cor-fundo);
+        }
+
+        /* Estilo para a visualização detalhada, priorizando a legibilidade do roteiro */
+        #roteiro-detail pre {
+            white-space: pre-wrap; /* Garante quebras de linha no roteiro */
+            background-color: #F3F4F6;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* Estilos do menu lateral para agrupar as iniciais */
+        .group-header {
+            font-weight: 700;
+            color: var(--cor-principal);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #F3F4F6;
+            transition: background-color 0.15s;
+        }
+
+        .group-header:hover {
+            background-color: #FEE2E2;
+        }
+
+        .roteiro-item {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid #F3F4F6;
+            transition: background-color 0.15s;
+        }
+
+        .roteiro-item:hover, .roteiro-item.active {
+            background-color: #FEE2E2;
+        }
+
+        /* Estilo para garantir que o layout 25/75 funcione bem em mobile (empilhando) */
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                min-height: auto;
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #E5E7EB;
+            }
+            .content-area {
+                width: 100%;
+                min-height: calc(100vh - 8rem); /* Ajuste */
+            }
+        }
+    </style>
+</head>
+<body class="h-screen overflow-hidden">
+
+    <!-- Script para carregar os dados originais -->
+    <script src="roteiros_data.js"></script>
+
+    <!-- Header Principal (Barra Superior) -->
+    <header class="bg-white shadow-md p-4 flex justify-between items-center z-10 sticky top-0">
+        <h1 class="text-2xl font-bold text-gray-800">COBOM - Roteiros 193</h1>
+        <button id="new-roteiro-btn"
+                class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out shadow-lg flex items-center"
+                onclick="showForm('create')">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Nova Natureza
+        </button>
+    </header>
+
+    <!-- Container Principal (25% Sidebar | 75% Conteúdo) -->
+    <main class="main-container flex h-full">
+
+        <!-- Painel de Navegação (25%) -->
+        <aside class="sidebar w-full lg:w-1/4 p-4 overflow-y-auto">
+            <input type="text" id="search-input" onkeyup="handleSearch()" placeholder="Buscar por Código, Título ou Descrição"
+                   class="w-full p-2 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+
+            <div id="sidebar-menu" class="space-y-1">
+                <!-- Links e grupos populados dinamicamente pelo JavaScript -->
+            </div>
+        </aside>
+
+        <!-- Área de Conteúdo (75%) -->
+        <section class="content-area w-full lg:w-3/4 p-6 overflow-y-auto">
+            <div id="content-container">
+                <!-- Conteúdo dinâmico (Lista, Detalhes ou Formulário) -->
+                <h2 class="text-xl font-semibold text-gray-700">Selecione uma Natureza</h2>
+                <p class="text-gray-500 mt-2">Use o menu lateral ou a busca para encontrar um roteiro de atendimento.</p>
+            </div>
+
+            <!-- Modal de Confirmação (Substitui alert/confirm) -->
+            <div id="confirmation-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+                <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm">
+                    <h3 class="text-lg font-bold text-gray-800" id="modal-title">Confirmar Exclusão</h3>
+                    <p class="mt-4 text-gray-600" id="modal-message">Você tem certeza que deseja excluir esta Natureza? Esta ação é irreversível.</p>
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button id="modal-cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cancelar</button>
+                        <button id="modal-confirm-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Excluir</button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+        // --- CONSTANTES E VARIÁVEIS GLOBAIS ---
+        /** Define o perfil de acesso. true = Administrador (CRUD); false = Teleatendente (Somente Consulta) */
+        const isAdmin = false;
+
+        let roteiros = []; // Cópia mutável dos dados
+        let currentRoteiroId = null; // ID (código) do roteiro em edição/visualização
+
+        const contentContainer = document.getElementById('content-container');
+        const sidebarMenu = document.getElementById('sidebar-menu');
+        const searchInput = document.getElementById('search-input');
+        const newRoteiroBtn = document.getElementById('new-roteiro-btn');
+
+        // --- FUNÇÕES DE PERSISTÊNCIA E INICIALIZAÇÃO ---
+
+        /** Salva o array 'roteiros' atualizado no localStorage. */
+        function persistData() {
+            try {
+                localStorage.setItem('roteiros193_data', JSON.stringify(roteiros));
+            } catch (error) {
+                console.error('Erro ao salvar no localStorage:', error);
+            }
+        }
+
+        /** Inicializa a aplicação carregando dados e renderizando a UI. */
+        function init() {
+            // 1. Carregar dados
+            const savedData = localStorage.getItem('roteiros193_data');
+            if (savedData) {
+                roteiros = JSON.parse(savedData);
+            } else if (typeof ROTEIROS_DATA !== 'undefined' && Array.isArray(ROTEIROS_DATA)) {
+                roteiros = ROTEIROS_DATA;
+                persistData(); // Salva a cópia inicial no localStorage
+            } else {
+                console.error("ERRO: Variável ROTEIROS_DATA não encontrada ou não é um Array.");
+                roteiros = [];
+            }
+
+            // 2. Configurar UI Admin/Teleatendente
+            if (!isAdmin) {
+                newRoteiroBtn.classList.add('hidden');
+            } else {
+                newRoteiroBtn.classList.remove('hidden');
+            }
+
+            // 3. Renderizar Menu
+            renderSidebar(roteiros);
+
+            // 4. Exibir Conteúdo Inicial
+            renderContentArea('initial');
+        }
+
+        // --- FUNÇÕES DE RENDERIZAÇÃO E NAVEGAÇÃO ---
+
+        /**
+         * Renderiza a área de conteúdo principal.
+         * @param {string} view - 'initial', 'list', 'details', 'form'
+         * @param {Object} [data] - Dados a serem passados (e.g., roteiro)
+         */
+        function renderContentArea(view, data = null) {
+            contentContainer.innerHTML = ''; // Limpa o conteúdo
+
+            switch (view) {
+                case 'initial':
+                    contentContainer.innerHTML = `
+                        <div class="p-8 text-center bg-white rounded-xl shadow-lg">
+                            <h2 class="text-3xl font-extrabold text-red-700">Sistema de Roteiros 193</h2>
+                            <p class="text-lg text-gray-600 mt-4">
+                                ${isAdmin ? 'Bem-vindo, Administrador. Use a busca ou o menu lateral para gerenciar os roteiros.' : 'Bem-vindo, Teleatendente. Use a busca ou o menu lateral para consultar os roteiros de atendimento.'}
+                            </p>
+                            <img src="https://placehold.co/300x100/D72828/ffffff?text=CBMMG+COBOM" class="mx-auto mt-6 rounded-lg" alt="Placeholder CBMMG COBOM Logo">
+                        </div>
+                    `;
+                    break;
+
+                case 'details':
+                    if (!data) return;
+
+                    const adminButtons = isAdmin ? `
+                        <div class="flex space-x-3 mt-6 border-t pt-4">
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 shadow-md"
+                                    onclick="showForm('edit', '${data.codigo}')">
+                                <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-7 1l-1 1m-1 1l-4 4m0-12l4 4m-4-4l-4 4m8-8l-4 4m8-8l-4 4m4 4l-4-4"></path></svg>
+                                Editar
+                            </button>
+                            <button class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 shadow-md"
+                                    onclick="showConfirmationModal('${data.codigo}')">
+                                <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                Excluir
+                            </button>
+                        </div>
+                    ` : '';
+
+                    contentContainer.innerHTML = `
+                        <div class="bg-white p-6 rounded-xl shadow-xl">
+                            <span class="text-sm font-semibold text-red-500">${data.codigo}</span>
+                            <h2 class="text-3xl font-extrabold text-gray-800 mt-1">${data.titulo}</h2>
+                            <p class="text-gray-600 mt-2 italic">${data.descricao}</p>
+
+                            <h3 class="text-xl font-bold text-gray-700 mt-6 mb-3 border-b pb-2">Roteiro de Atendimento</h3>
+                            <div id="roteiro-detail">
+                                <pre>${data.roteiro}</pre>
+                            </div>
+                            ${adminButtons}
+                            <button class="mt-6 text-red-600 hover:text-red-800" onclick="renderSidebar(roteiros, true)">
+                                &larr; Voltar à Lista
+                            </button>
+                        </div>
+                    `;
+                    currentRoteiroId = data.codigo;
+                    break;
+
+                case 'form':
+                    showFormContent(data);
+                    break;
+
+                case 'list':
+                default:
+                    // Renderiza a lista de roteiros filtrados/buscados (se houver)
+                    contentContainer.innerHTML = `
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Naturezas Encontradas</h2>
+                        <div id="roteiro-list" class="space-y-3">
+                            <p class="text-gray-500">Nenhuma natureza selecionada ou filtro aplicado. Use a busca ou o menu lateral.</p>
+                        </div>
+                    `;
+                    // A lista é renderizada separadamente via handleGroupFilter ou handleSearch
+                    break;
+            }
+        }
+
+        /**
+         * Renderiza o menu lateral agrupando pelo primeiro caractere do código.
+         * @param {Array<Object>} data - O array de roteiros a ser usado.
+         * @param {boolean} [forceRenderList=false] - Força a exibição da lista de todos os roteiros.
+         */
+        function renderSidebar(data, forceRenderList = false) {
+            sidebarMenu.innerHTML = '';
+            const groupedRoteiros = {};
+
+            data.forEach(roteiro => {
+                const initial = roteiro.codigo.charAt(0).toUpperCase();
+                if (!groupedRoteiros[initial]) {
+                    groupedRoteiros[initial] = [];
+                }
+                groupedRoteiros[initial].push(roteiro);
+            });
+
+            // Cria o HTML do menu
+            Object.keys(groupedRoteiros).sort().forEach(initial => {
+                // Título do grupo
+                const groupHeader = document.createElement('div');
+                groupHeader.className = 'group-header';
+                groupHeader.innerHTML = `${initial} <span class="text-xs text-gray-500 ml-1">(${groupedRoteiros[initial].length})</span>`;
+                groupHeader.onclick = () => handleGroupFilter(initial);
+                sidebarMenu.appendChild(groupHeader);
+
+                // Itens (ocultos inicialmente ou mostrados apenas após filtro)
+                // Não renderizamos os itens diretamente no menu lateral, apenas os grupos
+            });
+
+            if (forceRenderList) {
+                // Força a renderização da lista completa no painel principal se solicitado
+                renderRoteiroList(data);
+            }
+        }
+
+        /**
+         * Renderiza uma lista de roteiros no painel principal.
+         * @param {Array<Object>} filteredData - Os roteiros filtrados.
+         */
+        function renderRoteiroList(filteredData) {
+            renderContentArea('list'); // Configura o contêiner para lista
+            const listDiv = document.getElementById('roteiro-list');
+
+            if (filteredData.length === 0) {
+                listDiv.innerHTML = '<p class="text-gray-500 mt-2">Nenhum roteiro encontrado com o filtro ou busca atual.</p>';
+                return;
+            }
+
+            listDiv.innerHTML = filteredData.map(roteiro => `
+                <div class="roteiro-item bg-white p-4 rounded-lg shadow-sm hover:shadow-md border border-gray-100"
+                     onclick="showDetails('${roteiro.codigo}')">
+                    <span class="text-xs font-medium text-red-600">${roteiro.codigo}</span>
+                    <h4 class="text-lg font-semibold text-gray-800">${roteiro.titulo}</h4>
+                    <p class="text-sm text-gray-500 truncate">${roteiro.descricao}</p>
+                </div>
+            `).join('');
+        }
+
+        /** Exibe os detalhes de um roteiro. */
+        function showDetails(codigo) {
+            const roteiro = roteiros.find(r => r.codigo === codigo);
+            if (roteiro) {
+                // Remove classe 'active' de todos
+                document.querySelectorAll('.roteiro-item').forEach(item => item.classList.remove('active'));
+                // Adiciona classe 'active' ao item clicado (se a lista estiver visível)
+                const clickedItem = document.querySelector(`.roteiro-item[onclick*="'${codigo}'"]`);
+                if (clickedItem) clickedItem.classList.add('active');
+
+                renderContentArea('details', roteiro);
+            } else {
+                renderContentArea('initial');
+            }
+        }
+
+        // --- FUNÇÕES DE FILTRO E BUSCA ---
+
+        /** Filtra a lista principal clicando nos grupos do menu lateral. */
+        function handleGroupFilter(initial) {
+            searchInput.value = ''; // Limpa a busca
+            const filteredData = roteiros.filter(r => r.codigo.charAt(0).toUpperCase() === initial);
+            renderRoteiroList(filteredData);
+        }
+
+        /** Realiza a busca dinâmica por Código, Título ou Descrição. */
+        function handleSearch() {
+            const term = searchInput.value.toLowerCase().trim();
+            if (term.length < 2) {
+                // Se a busca estiver vazia ou curta, exibe a lista completa
+                renderSidebar(roteiros);
+                renderContentArea('initial');
+                return;
+            }
+
+            const filteredData = roteiros.filter(r =>
+                r.codigo.toLowerCase().includes(term) ||
+                r.titulo.toLowerCase().includes(term) ||
+                r.descricao.toLowerCase().includes(term)
+            );
+
+            renderRoteiroList(filteredData);
+        }
+
+        // --- FUNÇÕES CRUD (ADMINISTRADOR) ---
+
+        /**
+         * Exibe o formulário de criação ou edição.
+         * @param {string} mode - 'create' ou 'edit'
+         * @param {string} [codigo] - Código do roteiro a ser editado
+         */
+        function showForm(mode, codigo = null) {
+            if (!isAdmin) return;
+            currentRoteiroId = codigo;
+            renderContentArea('form', { mode, codigo });
+        }
+
+        /** Renderiza o formulário de CRUD. Separado para melhor organização. */
+        function showFormContent({ mode, codigo }) {
+            let data = { codigo: '', titulo: '', descricao: '', roteiro: '' };
+            let title = 'Nova Natureza (Cadastro)';
+            let isEdit = mode === 'edit';
+
+            if (isEdit) {
+                const existing = roteiros.find(r => r.codigo === codigo);
+                if (existing) {
+                    data = existing;
+                    title = `Editar Natureza: ${data.codigo}`;
+                } else {
+                    alert('Natureza não encontrada para edição.');
+                    return;
+                }
+            }
+
+            contentContainer.innerHTML = `
+                <div class="bg-white p-6 rounded-xl shadow-xl">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">${title}</h2>
+                    <form id="roteiro-form" onsubmit="handleSave(event)">
+
+                        <div class="mb-4">
+                            <label for="form-codigo" class="block text-sm font-medium text-gray-700">Código <span class="text-red-500">*</span></label>
+                            <input type="text" id="form-codigo" name="codigo" value="${data.codigo}" required
+                                   class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:border-red-500 focus:ring-red-500"
+                                   ${isEdit ? 'readonly disabled' : ''}>
+                            ${isEdit ? `<input type="hidden" name="codigo" value="${data.codigo}">` : ''}
+                            ${isEdit ? `<p class="text-xs text-gray-500 mt-1">O código não pode ser alterado na edição.</p>` : ''}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="form-titulo" class="block text-sm font-medium text-gray-700">Título <span class="text-red-500">*</span></label>
+                            <input type="text" id="form-titulo" name="titulo" value="${data.titulo}" required
+                                   class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:border-red-500 focus:ring-red-500">
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="form-descricao" class="block text-sm font-medium text-gray-700">Descrição</label>
+                            <textarea id="form-descricao" name="descricao" rows="3"
+                                      class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:border-red-500 focus:ring-red-500">${data.descricao}</textarea>
+                        </div>
+
+                        <div class="mb-6">
+                            <label for="form-roteiro" class="block text-sm font-medium text-gray-700">Roteiro de Atendimento <span class="text-red-500">*</span></label>
+                            <textarea id="form-roteiro" name="roteiro" rows="8" required
+                                      class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:border-red-500 focus:ring-red-500">${data.roteiro}</textarea>
+                            <p class="text-xs text-gray-500 mt-1">Use quebras de linha (Enter) para formatar o roteiro. Elas serão preservadas na visualização.</p>
+                        </div>
+
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg transition"
+                                    onclick="renderContentArea('initial')">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition shadow-md">
+                                <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                Salvar Natureza
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+        }
+
+        /** Lida com o salvamento (criação ou edição) do formulário. */
+        function handleSave(event) {
+            event.preventDefault();
+            if (!isAdmin) return;
+
+            const formData = new FormData(event.target);
+            const data = {
+                codigo: formData.get('codigo').toUpperCase().trim(),
+                titulo: formData.get('titulo').trim(),
+                descricao: formData.get('descricao').trim(),
+                roteiro: formData.get('roteiro').trim()
+            };
+
+            const index = roteiros.findIndex(r => r.codigo === data.codigo);
+
+            if (index !== -1) {
+                // Edição
+                roteiros[index] = data;
+                console.log('Roteiro atualizado:', data.codigo);
+            } else {
+                // Criação
+                // Verifica se o código já existe (caso o campo não estivesse desabilitado)
+                if (roteiros.some(r => r.codigo === data.codigo)) {
+                    console.error('Erro: Código já existe. Use um código único.');
+                    return;
+                }
+                roteiros.push(data);
+                roteiros.sort((a, b) => a.codigo.localeCompare(b.codigo)); // Mantém ordenado
+                console.log('Novo roteiro criado:', data.codigo);
+            }
+
+            persistData();
+            renderSidebar(roteiros);
+            showDetails(data.codigo); // Exibe os detalhes do item salvo
+        }
+
+        /** Exibe o modal de confirmação para exclusão. */
+        function showConfirmationModal(codigo) {
+            if (!isAdmin) return;
+            const modal = document.getElementById('confirmation-modal');
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+
+            document.getElementById('modal-title').textContent = `Confirmar Exclusão de ${codigo}`;
+            document.getElementById('modal-message').innerHTML = `Você tem certeza que deseja excluir a Natureza de Atendimento <strong class="text-red-700">${codigo}</strong>? Esta ação é irreversível.`;
+
+            confirmBtn.onclick = () => handleDelete(codigo);
+            document.getElementById('modal-cancel-btn').onclick = () => modal.classList.add('hidden');
+            modal.classList.remove('hidden');
+        }
+
+        /** Lida com a exclusão de um roteiro. */
+        function handleDelete(codigo) {
+            if (!isAdmin) return;
+
+            const modal = document.getElementById('confirmation-modal');
+            modal.classList.add('hidden');
+
+            const initialLength = roteiros.length;
+            roteiros = roteiros.filter(r => r.codigo !== codigo);
+
+            if (roteiros.length < initialLength) {
+                persistData();
+                renderSidebar(roteiros);
+                renderContentArea('initial'); // Volta para a tela inicial
+                console.log('Roteiro excluído:', codigo);
+
+                // Feedback visual de sucesso (opcional, simulação de toast/snackbar)
+                const feedback = document.createElement('div');
+                feedback.className = 'fixed bottom-4 right-4 bg-red-600 text-white p-3 rounded-lg shadow-xl transition-opacity duration-300';
+                feedback.textContent = `Natureza ${codigo} excluída com sucesso.`;
+                document.body.appendChild(feedback);
+                setTimeout(() => feedback.remove(), 3000);
+
+            } else {
+                console.error('Erro ao excluir: Roteiro não encontrado.');
+            }
+        }
+
+        // Inicia a aplicação quando a janela é carregada e todos os scripts estiverem prontos
+        window.onload = init;
+
+    </script>
+</body>
+</html>
