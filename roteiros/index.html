@@ -526,6 +526,18 @@
                 console.error('Erro ao excluir: Roteiro não encontrado.');
             }
         }
+        
+        // --- EXPOSIÇÃO DE FUNÇÕES AO ESCOPO GLOBAL (WINDOW) ---
+        // Necessário para que os manipuladores de eventos inline (onclick, onkeyup, onsubmit) funcionem
+        // quando o código está dentro de um módulo JS.
+        window.handleSearch = handleSearch;
+        window.showForm = showForm;
+        window.showDetails = showDetails;
+        window.handleGroupFilter = handleGroupFilter;
+        window.handleSave = handleSave;
+        window.showConfirmationModal = showConfirmationModal;
+        window.handleDelete = handleDelete;
+        window.renderSidebar = renderSidebar;
 
         // Inicia a aplicação quando a janela é carregada e todos os scripts estiverem prontos
         window.onload = init;
