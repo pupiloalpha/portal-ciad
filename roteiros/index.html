@@ -88,9 +88,9 @@
     <!-- Header Principal (Barra Superior) -->
     <header class="bg-white shadow-md p-4 flex justify-between items-center z-10 sticky top-0">
         <h1 class="text-2xl font-bold text-gray-800">COBOM - Roteiros 193</h1>
+        <!-- O evento onclick foi removido e será adicionado via JS -->
         <button id="new-roteiro-btn"
-                class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out shadow-lg flex items-center"
-                onclick="showForm('create')">
+                class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out shadow-lg flex items-center">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             Nova Natureza
         </button>
@@ -101,7 +101,8 @@
 
         <!-- Painel de Navegação (25%) -->
         <aside class="sidebar w-full lg:w-1/4 p-4 overflow-y-auto">
-            <input type="text" id="search-input" onkeyup="handleSearch()" placeholder="Buscar por Código, Título ou Descrição"
+            <!-- O evento onkeyup foi removido e será adicionado via JS -->
+            <input type="text" id="search-input" placeholder="Buscar por Código, Título ou Descrição"
                    class="w-full p-2 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
 
             <div id="sidebar-menu" class="space-y-1">
@@ -110,7 +111,7 @@
         </aside>
 
         <!-- Área de Conteúdo (75%) -->
-        <section class="content-area w-full lg:w-3/4 p-6 overflow-y-auto">
+        <section class="content-area w-full lg:w-3/4 p-6 overflow-y-auto" id="content-area-main">
             <div id="content-container">
                 <!-- Conteúdo dinâmico (Lista, Detalhes ou Formulário) -->
                 <h2 class="text-xl font-semibold text-gray-700">Selecione uma Natureza</h2>
@@ -124,7 +125,7 @@
                     <p class="mt-4 text-gray-600" id="modal-message">Você tem certeza que deseja excluir esta Natureza? Esta ação é irreversível.</p>
                     <div class="mt-6 flex justify-end space-x-3">
                         <button id="modal-cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Cancelar</button>
-                        <button id="modal-confirm-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Excluir</button>
+                        <button id="modal-confirm-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition" data-codigo="">Excluir</button>
                     </div>
                 </div>
             </div>
@@ -146,9 +147,11 @@
         let currentRoteiroId = null; // ID (código) do roteiro em edição/visualização
 
         const contentContainer = document.getElementById('content-container');
+        const contentAreaMain = document.getElementById('content-area-main'); // Novo
         const sidebarMenu = document.getElementById('sidebar-menu');
         const searchInput = document.getElementById('search-input');
         const newRoteiroBtn = document.getElementById('new-roteiro-btn');
+        const confirmationModal = document.getElementById('confirmation-modal');
 
         // --- FUNÇÕES DE PERSISTÊNCIA E INICIALIZAÇÃO ---
 
@@ -161,14 +164,13 @@
             }
         }
 
-        /** Inicializa a aplicação carregando dados e renderizando a UI. */
+        /** Inicializa a aplicação carregando dados, configurando UI e ouvintes de eventos. */
         function init() {
             // 1. Carregar dados
             const savedData = localStorage.getItem('roteiros193_data');
             if (savedData) {
                 roteiros = JSON.parse(savedData);
             } else if (typeof ROTEIROS_DATA !== 'undefined' && Array.isArray(ROTEIROS_DATA)) {
-                // ROTEIROS_DATA agora está disponível graças ao 'import'
                 roteiros = ROTEIROS_DATA; 
                 persistData(); // Salva a cópia inicial no localStorage
             } else {
@@ -183,11 +185,78 @@
                 newRoteiroBtn.classList.remove('hidden');
             }
 
-            // 3. Renderizar Menu
+            // 3. Configurar Event Listeners
+            setupEventListeners();
+            
+            // 4. Renderizar Menu
             renderSidebar(roteiros);
 
-            // 4. Exibir Conteúdo Inicial
+            // 5. Exibir Conteúdo Inicial
             renderContentArea('initial');
+        }
+
+        /** Configura os event listeners estáticos e a delegação de eventos. */
+        function setupEventListeners() {
+            // Evento de busca (keyup)
+            searchInput.addEventListener('keyup', handleSearch);
+
+            // Evento para o botão de Nova Natureza
+            newRoteiroBtn.addEventListener('click', () => showForm('create'));
+
+            // Delegação de eventos no painel principal (para itens dinâmicos)
+            contentAreaMain.addEventListener('click', handleContentAreaClick);
+            sidebarMenu.addEventListener('click', handleSidebarClick);
+
+            // Eventos do Modal de Confirmação
+            document.getElementById('modal-cancel-btn').addEventListener('click', () => confirmationModal.classList.add('hidden'));
+            document.getElementById('modal-confirm-btn').addEventListener('click', (e) => {
+                const codigo = e.currentTarget.getAttribute('data-codigo');
+                handleDelete(codigo);
+            });
+        }
+
+        /**
+         * Lida com cliques em elementos dinâmicos do painel principal (lista, detalhes, formulário).
+         * Usa delegação de eventos.
+         */
+        function handleContentAreaClick(event) {
+            const target = event.target.closest('[data-action]');
+            if (!target) return;
+
+            const action = target.getAttribute('data-action');
+            const codigo = target.getAttribute('data-codigo');
+
+            switch (action) {
+                case 'show-details':
+                    showDetails(codigo);
+                    break;
+                case 'edit-form':
+                    showForm('edit', codigo);
+                    break;
+                case 'delete-confirm':
+                    showConfirmationModal(codigo);
+                    break;
+                case 'back-to-list':
+                    renderSidebar(roteiros, true); // Volta para a lista completa
+                    break;
+                case 'cancel-form':
+                    renderContentArea('initial');
+                    break;
+            }
+        }
+
+        /**
+         * Lida com cliques nos cabeçalhos de grupo da barra lateral.
+         * Usa delegação de eventos.
+         */
+        function handleSidebarClick(event) {
+            const target = event.target.closest('.group-header');
+            if (!target) return;
+
+            const initial = target.getAttribute('data-initial');
+            if (initial) {
+                handleGroupFilter(initial);
+            }
         }
 
         // --- FUNÇÕES DE RENDERIZAÇÃO E NAVEGAÇÃO ---
@@ -219,12 +288,12 @@
                     const adminButtons = isAdmin ? `
                         <div class="flex space-x-3 mt-6 border-t pt-4">
                             <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 shadow-md"
-                                    onclick="showForm('edit', '${data.codigo}')">
+                                    data-action="edit-form" data-codigo="${data.codigo}">
                                 <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-7 1l-1 1m-1 1l-4 4m0-12l4 4m-4-4l-4 4m8-8l-4 4m8-8l-4 4m4 4l-4-4"></path></svg>
                                 Editar
                             </button>
                             <button class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 shadow-md"
-                                    onclick="showConfirmationModal('${data.codigo}')">
+                                    data-action="delete-confirm" data-codigo="${data.codigo}">
                                 <svg class="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                 Excluir
                             </button>
@@ -242,7 +311,7 @@
                                 <pre>${data.roteiro}</pre>
                             </div>
                             ${adminButtons}
-                            <button class="mt-6 text-red-600 hover:text-red-800" onclick="renderSidebar(roteiros, true)">
+                            <button class="mt-6 text-red-600 hover:text-red-800" data-action="back-to-list">
                                 &larr; Voltar à Lista
                             </button>
                         </div>
@@ -290,12 +359,11 @@
                 // Título do grupo
                 const groupHeader = document.createElement('div');
                 groupHeader.className = 'group-header';
+                // Adiciona data-attribute para o listener de delegação
+                groupHeader.setAttribute('data-initial', initial); 
                 groupHeader.innerHTML = `${initial} <span class="text-xs text-gray-500 ml-1">(${groupedRoteiros[initial].length})</span>`;
-                groupHeader.onclick = () => handleGroupFilter(initial);
+                
                 sidebarMenu.appendChild(groupHeader);
-
-                // Itens (ocultos inicialmente ou mostrados apenas após filtro)
-                // Não renderizamos os itens diretamente no menu lateral, apenas os grupos
             });
 
             if (forceRenderList) {
@@ -319,7 +387,7 @@
 
             listDiv.innerHTML = filteredData.map(roteiro => `
                 <div class="roteiro-item bg-white p-4 rounded-lg shadow-sm hover:shadow-md border border-gray-100"
-                     onclick="showDetails('${roteiro.codigo}')">
+                     data-action="show-details" data-codigo="${roteiro.codigo}">
                     <span class="text-xs font-medium text-red-600">${roteiro.codigo}</span>
                     <h4 class="text-lg font-semibold text-gray-800">${roteiro.titulo}</h4>
                     <p class="text-sm text-gray-500 truncate">${roteiro.descricao}</p>
@@ -333,8 +401,9 @@
             if (roteiro) {
                 // Remove classe 'active' de todos
                 document.querySelectorAll('.roteiro-item').forEach(item => item.classList.remove('active'));
+                
                 // Adiciona classe 'active' ao item clicado (se a lista estiver visível)
-                const clickedItem = document.querySelector(`.roteiro-item[onclick*="'${codigo}'"]`);
+                const clickedItem = document.querySelector(`.roteiro-item[data-codigo="${codigo}"]`);
                 if (clickedItem) clickedItem.classList.add('active');
 
                 renderContentArea('details', roteiro);
@@ -401,17 +470,18 @@
                 }
             }
 
+            // O evento onsubmit foi removido e será adicionado via JS no final da função
             contentContainer.innerHTML = `
                 <div class="bg-white p-6 rounded-xl shadow-xl">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">${title}</h2>
-                    <form id="roteiro-form" onsubmit="handleSave(event)">
+                    <form id="roteiro-form">
 
                         <div class="mb-4">
                             <label for="form-codigo" class="block text-sm font-medium text-gray-700">Código <span class="text-red-500">*</span></label>
                             <input type="text" id="form-codigo" name="codigo" value="${data.codigo}" required
                                    class="mt-1 block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:border-red-500 focus:ring-red-500"
                                    ${isEdit ? 'readonly disabled' : ''}>
-                            ${isEdit ? `<input type="hidden" name="codigo" value="${data.codigo}">` : ''}
+                            ${isEdit ? `<input type="hidden" name="codigo-original" value="${data.codigo}">` : ''}
                             ${isEdit ? `<p class="text-xs text-gray-500 mt-1">O código não pode ser alterado na edição.</p>` : ''}
                         </div>
 
@@ -436,7 +506,7 @@
 
                         <div class="flex justify-end space-x-3">
                             <button type="button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg transition"
-                                    onclick="renderContentArea('initial')">
+                                    data-action="cancel-form">
                                 Cancelar
                             </button>
                             <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition shadow-md">
@@ -447,6 +517,8 @@
                     </form>
                 </div>
             `;
+            // Anexa o ouvinte de submissão diretamente ao formulário após ele ser renderizado
+            document.getElementById('roteiro-form')?.addEventListener('submit', handleSave);
         }
 
         /** Lida com o salvamento (criação ou edição) do formulário. */
@@ -455,8 +527,10 @@
             if (!isAdmin) return;
 
             const formData = new FormData(event.target);
+            const isEdit = event.target.querySelector('input[name="codigo-original"]') !== null;
+            
             const data = {
-                codigo: formData.get('codigo').toUpperCase().trim(),
+                codigo: isEdit ? formData.get('codigo-original').toUpperCase().trim() : formData.get('codigo').toUpperCase().trim(),
                 titulo: formData.get('titulo').trim(),
                 descricao: formData.get('descricao').trim(),
                 roteiro: formData.get('roteiro').trim()
@@ -470,9 +544,10 @@
                 console.log('Roteiro atualizado:', data.codigo);
             } else {
                 // Criação
-                // Verifica se o código já existe (caso o campo não estivesse desabilitado)
+                // Verifica se o código já existe
                 if (roteiros.some(r => r.codigo === data.codigo)) {
                     console.error('Erro: Código já existe. Use um código único.');
+                    // Adicionar feedback visual ao usuário aqui (ex: mensagem no formulário)
                     return;
                 }
                 roteiros.push(data);
@@ -488,23 +563,21 @@
         /** Exibe o modal de confirmação para exclusão. */
         function showConfirmationModal(codigo) {
             if (!isAdmin) return;
-            const modal = document.getElementById('confirmation-modal');
             const confirmBtn = document.getElementById('modal-confirm-btn');
 
             document.getElementById('modal-title').textContent = `Confirmar Exclusão de ${codigo}`;
             document.getElementById('modal-message').innerHTML = `Você tem certeza que deseja excluir a Natureza de Atendimento <strong class="text-red-700">${codigo}</strong>? Esta ação é irreversível.`;
 
-            confirmBtn.onclick = () => handleDelete(codigo);
-            document.getElementById('modal-cancel-btn').onclick = () => modal.classList.add('hidden');
-            modal.classList.remove('hidden');
+            // Atribui o código ao data-attribute do botão de confirmação
+            confirmBtn.setAttribute('data-codigo', codigo);
+            confirmationModal.classList.remove('hidden');
         }
 
         /** Lida com a exclusão de um roteiro. */
         function handleDelete(codigo) {
             if (!isAdmin) return;
 
-            const modal = document.getElementById('confirmation-modal');
-            modal.classList.add('hidden');
+            confirmationModal.classList.add('hidden');
 
             const initialLength = roteiros.length;
             roteiros = roteiros.filter(r => r.codigo !== codigo);
@@ -527,18 +600,6 @@
             }
         }
         
-        // --- EXPOSIÇÃO DE FUNÇÕES AO ESCOPO GLOBAL (WINDOW) ---
-        // Necessário para que os manipuladores de eventos inline (onclick, onkeyup, onsubmit) funcionem
-        // quando o código está dentro de um módulo JS.
-        window.handleSearch = handleSearch;
-        window.showForm = showForm;
-        window.showDetails = showDetails;
-        window.handleGroupFilter = handleGroupFilter;
-        window.handleSave = handleSave;
-        window.showConfirmationModal = showConfirmationModal;
-        window.handleDelete = handleDelete;
-        window.renderSidebar = renderSidebar;
-
         // Inicia a aplicação quando a janela é carregada e todos os scripts estiverem prontos
         window.onload = init;
 
