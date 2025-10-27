@@ -48,7 +48,31 @@
             cursor: pointer;
             border-bottom: 1px solid #F3F4F6;
             transition: background-color 0.15s;
+            display: flex; /* Adicionado para organizar letra e significado */
+            justify-content: space-between;
+            align-items: center;
         }
+        
+        /* Estilo para o significado (aparece apenas em telas maiores) */
+        .group-meaning {
+            font-weight: 400;
+            color: #4B5563; /* Cinza mais escuro */
+            font-size: 0.75rem;
+            text-align: right;
+            margin-left: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 60%; /* Limita o tamanho para não quebrar o layout */
+        }
+        
+        /* Oculta o significado em telas muito pequenas */
+        @media (max-width: 1024px) {
+            .group-meaning {
+                display: none;
+            }
+        }
+
 
         .group-header:hover {
             background-color: #FEE2E2;
@@ -88,7 +112,6 @@
     <!-- Header Principal (Barra Superior) -->
     <header class="bg-white shadow-md p-4 flex justify-between items-center z-10 sticky top-0">
         <h1 class="text-2xl font-bold text-gray-800">COBOM - Roteiros 193</h1>
-        <!-- O evento onclick foi removido e será adicionado via JS -->
         <button id="new-roteiro-btn"
                 class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out shadow-lg flex items-center">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -101,7 +124,6 @@
 
         <!-- Painel de Navegação (25%) -->
         <aside class="sidebar w-full lg:w-1/4 p-4 overflow-y-auto">
-            <!-- O evento onkeyup foi removido e será adicionado via JS -->
             <input type="text" id="search-input" placeholder="Buscar por Código, Título ou Descrição"
                    class="w-full p-2 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
 
@@ -141,7 +163,24 @@
         
         // --- CONSTANTES E VARIÁVEIS GLOBAIS ---
         /** Define o perfil de acesso. true = Administrador (CRUD); false = Teleatendente (Somente Consulta) */
-        const isAdmin = false;
+        const isAdmin = true; // Mantido como true para permitir o uso do CRUD administrativo no ambiente local
+
+        /** Mapeamento das letras iniciais dos códigos com seus significados no CBMMG. */
+        const CODE_MEANINGS = {
+            'O': 'Explosão e Incêndio',
+            'A': 'Ações De Defesa Social',
+            'P': 'Prevenção e Vistoria',
+            'Q': 'Demonstrações, Palestras E Treinamentos',
+            'R': 'Atividades de Defesa Civil',
+            'W': 'Procedimentos Administrativos CIAD',
+            'S': 'Busca e Salvamento',
+            'Y': 'Operações De Defesa Social',
+            'V': 'Atendimento Pré-Hospitalar',
+            'X': 'Coordenação E Controle Operacional E Administrativo',
+            'U': 'Comunicações, Denúncias, Reclamações E Solicitações Diversas',
+            // Caso exista alguma inicial não mapeada, ela será tratada como 'Outros'.
+        };
+
 
         let roteiros = []; // Cópia mutável dos dados
         let currentRoteiroId = null; // ID (código) do roteiro em edição/visualização
@@ -158,6 +197,7 @@
         /** Salva o array 'roteiros' atualizado no localStorage. */
         function persistData() {
             try {
+                // Salva a cópia mutável que contém as edições feitas pelo Admin
                 localStorage.setItem('roteiros193_data', JSON.stringify(roteiros));
             } catch (error) {
                 console.error('Erro ao salvar no localStorage:', error);
@@ -166,11 +206,12 @@
 
         /** Inicializa a aplicação carregando dados, configurando UI e ouvintes de eventos. */
         function init() {
-            // 1. Carregar dados
+            // 1. Carregar dados: Prioriza o localStorage, caso contrário, usa o arquivo JS
             const savedData = localStorage.getItem('roteiros193_data');
             if (savedData) {
                 roteiros = JSON.parse(savedData);
             } else if (typeof ROTEIROS_DATA !== 'undefined' && Array.isArray(ROTEIROS_DATA)) {
+                // Usa os dados do arquivo JS como base inicial (se não houver nada no cache)
                 roteiros = ROTEIROS_DATA; 
                 persistData(); // Salva a cópia inicial no localStorage
             } else {
@@ -237,7 +278,8 @@
                     showConfirmationModal(codigo);
                     break;
                 case 'back-to-list':
-                    renderSidebar(roteiros, true); // Volta para a lista completa
+                    // renderSidebar(roteiros, true); // Não precisa forçar a renderização da lista se for para voltar ao estado inicial
+                    renderContentArea('initial');
                     break;
                 case 'cancel-form':
                     renderContentArea('initial');
@@ -275,7 +317,7 @@
                         <div class="p-8 text-center bg-white rounded-xl shadow-lg">
                             <h2 class="text-3xl font-extrabold text-red-700">Sistema de Roteiros 193</h2>
                             <p class="text-lg text-gray-600 mt-4">
-                                ${isAdmin ? 'Bem-vindo, Administrador. Use a busca ou o menu lateral para gerenciar os roteiros.' : 'Bem-vindo, Teleatendente. Use a busca ou o menu lateral para consultar os roteiros de atendimento.'}
+                                ${isAdmin ? 'Bem-vindo, Administrador. As alterações são salvas no cache do seu navegador (localStorage) para funcionamento offline.' : 'Bem-vindo, Teleatendente. Use a busca ou o menu lateral para consultar os roteiros de atendimento.'}
                             </p>
                             <img src="https://placehold.co/300x100/D72828/ffffff?text=CBMMG+COBOM" class="mx-auto mt-6 rounded-lg" alt="Placeholder CBMMG COBOM Logo">
                         </div>
@@ -329,7 +371,7 @@
                     contentContainer.innerHTML = `
                         <h2 class="text-2xl font-bold text-gray-800 mb-4">Naturezas Encontradas</h2>
                         <div id="roteiro-list" class="space-y-3">
-                            <p class="text-gray-500">Nenhuma natureza selecionada ou filtro aplicado. Use a busca ou o menu lateral.</p>
+                            <p class="text-gray-500">Nenhum roteiro encontrado com o filtro ou busca atual.</p>
                         </div>
                     `;
                     // A lista é renderizada separadamente via handleGroupFilter ou handleSearch
@@ -340,9 +382,8 @@
         /**
          * Renderiza o menu lateral agrupando pelo primeiro caractere do código.
          * @param {Array<Object>} data - O array de roteiros a ser usado.
-         * @param {boolean} [forceRenderList=false] - Força a exibição da lista de todos os roteiros.
          */
-        function renderSidebar(data, forceRenderList = false) {
+        function renderSidebar(data) {
             sidebarMenu.innerHTML = '';
             const groupedRoteiros = {};
 
@@ -356,20 +397,26 @@
 
             // Cria o HTML do menu
             Object.keys(groupedRoteiros).sort().forEach(initial => {
+                // Tenta encontrar o significado da letra
+                const meaning = CODE_MEANINGS[initial] || 'Outras Naturezas';
+                
                 // Título do grupo
                 const groupHeader = document.createElement('div');
                 groupHeader.className = 'group-header';
                 // Adiciona data-attribute para o listener de delegação
                 groupHeader.setAttribute('data-initial', initial); 
-                groupHeader.innerHTML = `${initial} <span class="text-xs text-gray-500 ml-1">(${groupedRoteiros[initial].length})</span>`;
+                
+                // Estrutura do HTML com o significado
+                groupHeader.innerHTML = `
+                    <div class="flex items-center">
+                        ${initial} 
+                        <span class="text-xs text-gray-500 ml-2">(${groupedRoteiros[initial].length})</span>
+                    </div>
+                    <span class="group-meaning">${meaning}</span>
+                `;
                 
                 sidebarMenu.appendChild(groupHeader);
             });
-
-            if (forceRenderList) {
-                // Força a renderização da lista completa no painel principal se solicitado
-                renderRoteiroList(data);
-            }
         }
 
         /**
@@ -424,12 +471,14 @@
         /** Realiza a busca dinâmica por Código, Título ou Descrição. */
         function handleSearch() {
             const term = searchInput.value.toLowerCase().trim();
-            if (term.length < 2) {
-                // Se a busca estiver vazia ou curta, exibe a lista completa
-                renderSidebar(roteiros);
+            if (term.length < 2 && term.length !== 0) {
+                return;
+            }
+             if (term.length === 0) {
                 renderContentArea('initial');
                 return;
             }
+
 
             const filteredData = roteiros.filter(r =>
                 r.codigo.toLowerCase().includes(term) ||
@@ -470,7 +519,6 @@
                 }
             }
 
-            // O evento onsubmit foi removido e será adicionado via JS no final da função
             contentContainer.innerHTML = `
                 <div class="bg-white p-6 rounded-xl shadow-xl">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">${title}</h2>
@@ -527,10 +575,11 @@
             if (!isAdmin) return;
 
             const formData = new FormData(event.target);
+            // Verifica se está editando com base na presença do campo oculto
             const isEdit = event.target.querySelector('input[name="codigo-original"]') !== null;
             
             const data = {
-                codigo: isEdit ? formData.get('codigo-original').toUpperCase().trim() : formData.get('codigo').toUpperCase().trim(),
+                codigo: (isEdit ? formData.get('codigo-original') : formData.get('codigo')).toUpperCase().trim(),
                 titulo: formData.get('titulo').trim(),
                 descricao: formData.get('descricao').trim(),
                 roteiro: formData.get('roteiro').trim()
@@ -546,8 +595,12 @@
                 // Criação
                 // Verifica se o código já existe
                 if (roteiros.some(r => r.codigo === data.codigo)) {
-                    console.error('Erro: Código já existe. Use um código único.');
-                    // Adicionar feedback visual ao usuário aqui (ex: mensagem no formulário)
+                    // Usamos feedback na tela em vez de alert()
+                    const feedbackError = document.createElement('div');
+                    feedbackError.className = 'fixed bottom-4 right-4 bg-red-800 text-white p-3 rounded-lg shadow-xl transition-opacity duration-300';
+                    feedbackError.textContent = `Erro: O código ${data.codigo} já existe. Use um código único.`;
+                    document.body.appendChild(feedbackError);
+                    setTimeout(() => feedbackError.remove(), 4000);
                     return;
                 }
                 roteiros.push(data);
@@ -555,7 +608,7 @@
                 console.log('Novo roteiro criado:', data.codigo);
             }
 
-            persistData();
+            persistData(); // Salva no localStorage
             renderSidebar(roteiros);
             showDetails(data.codigo); // Exibe os detalhes do item salvo
         }
