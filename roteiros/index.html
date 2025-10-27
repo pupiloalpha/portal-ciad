@@ -85,9 +85,6 @@
 </head>
 <body class="h-screen overflow-hidden">
 
-    <!-- Script para carregar os dados originais -->
-    <script src="roteiros_data.js"></script>
-
     <!-- Header Principal (Barra Superior) -->
     <header class="bg-white shadow-md p-4 flex justify-between items-center z-10 sticky top-0">
         <h1 class="text-2xl font-bold text-gray-800">COBOM - Roteiros 193</h1>
@@ -136,7 +133,11 @@
 
     </main>
 
-    <script>
+    <!-- O bloco principal de script precisa ser um módulo para usar 'import' -->
+    <script type="module">
+        // Importa a constante ROTEIROS_DATA do arquivo 'roteiros_data.js'
+        import { ROTEIROS_DATA } from './roteiros_data.js';
+        
         // --- CONSTANTES E VARIÁVEIS GLOBAIS ---
         /** Define o perfil de acesso. true = Administrador (CRUD); false = Teleatendente (Somente Consulta) */
         const isAdmin = false;
@@ -167,7 +168,8 @@
             if (savedData) {
                 roteiros = JSON.parse(savedData);
             } else if (typeof ROTEIROS_DATA !== 'undefined' && Array.isArray(ROTEIROS_DATA)) {
-                roteiros = ROTEIROS_DATA;
+                // ROTEIROS_DATA agora está disponível graças ao 'import'
+                roteiros = ROTEIROS_DATA; 
                 persistData(); // Salva a cópia inicial no localStorage
             } else {
                 console.error("ERRO: Variável ROTEIROS_DATA não encontrada ou não é um Array.");
@@ -394,7 +396,7 @@
                     data = existing;
                     title = `Editar Natureza: ${data.codigo}`;
                 } else {
-                    alert('Natureza não encontrada para edição.');
+                    console.error('Natureza não encontrada para edição.');
                     return;
                 }
             }
@@ -513,7 +515,7 @@
                 renderContentArea('initial'); // Volta para a tela inicial
                 console.log('Roteiro excluído:', codigo);
 
-                // Feedback visual de sucesso (opcional, simulação de toast/snackbar)
+                // Feedback visual de sucesso (simulação de toast/snackbar)
                 const feedback = document.createElement('div');
                 feedback.className = 'fixed bottom-4 right-4 bg-red-600 text-white p-3 rounded-lg shadow-xl transition-opacity duration-300';
                 feedback.textContent = `Natureza ${codigo} excluída com sucesso.`;
