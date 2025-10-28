@@ -111,7 +111,7 @@
 
     <!-- Header Principal (Barra Superior) -->
     <header class="bg-white shadow-md p-4 flex justify-between items-center z-10 sticky top-0">
-        <h1 class="text-2xl font-bold text-gray-800">COBOM - Roteiros 193</h1>
+        <h1 class="text-2xl font-bold text-gray-800">COBOM - Roteiros do Teleatendimento 193</h1>
         <button id="new-roteiro-btn"
                 class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out shadow-lg flex items-center">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -163,7 +163,7 @@
         
         // --- CONSTANTES E VARIÁVEIS GLOBAIS ---
         /** Define o perfil de acesso. true = Administrador (CRUD); false = Teleatendente (Somente Consulta) */
-        const isAdmin = true; // Mantido como true para permitir o uso do CRUD administrativo no ambiente local
+        const isAdmin = false; // Mantido como false para impedir o uso do CRUD administrativo no ambiente local
 
         /** Mapeamento das letras iniciais dos códigos com seus significados no CBMMG. */
         const CODE_MEANINGS = {
