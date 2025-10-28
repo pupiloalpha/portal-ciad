@@ -283,10 +283,10 @@
         <div id="sidebar">
             <h4 class="px-3 mb-4"><i class="bi bi-menu-button-wide"></i> POP Teleatendimento</h4>
             <ul class="nav flex-column" id="main-menu">
-                <li class="nav-item">
+               <!-- <li class="nav-item">
                     <a class="nav-link active" href="#" data-target="triagem">
                         <i class="bi bi-fire"></i> Triagem de Chamadas 193</a>
-                </li>
+                </li> -->
                 <li class="nav-item">
                     <a class="nav-link" href="#" data-target="dados-cad">
                         <i class="bi bi-clipboard2-check"></i> Registro de Chamada no CAD</a>
@@ -327,10 +327,10 @@
                     <a class="nav-link" href="#" data-target="informacoes">
                         <i class="bi bi-info-circle"></i> Orientações e Informações</a>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link" href="#" data-target="saved-calls">
                         <i class="bi bi-archive"></i> Chamadas Salvas</a>
-                </li>
+                </li> -->
             </ul>
         </div>
     </div>
@@ -686,7 +686,7 @@
         const appData = {
             history: [], // Armazena os IDs dos nós visitados para navegação de volta
             pathHistory: [], // Armazena perguntas e respostas para o resumo final
-            currentSection: 'triagem', // Seção ativa do menu lateral
+            currentSection: 'dados-cad' //'triagem', // Seção ativa do menu lateral
             
             // Base de dados dos municípios por grupo SAMU para consulta
             gruposSamu: {
