@@ -3,7 +3,8 @@
  * Gerado a partir do arquivo CSV fornecido.
  * @type {Array<Object>}
  */
-export const ROTEIROS_DATA = {
+export const ROTEIROS_DATA = [ 
+{
         "codigo": "O 01.001",
         "titulo": "EXPLOSÃO EM RESIDÊNCIA/HABITAÇÃO UNIFAMILIAR (CASA)",
         "descricao": "Nesta natureza enquadram-se as explosões ocorridas em edificações residenciais unifamiliares casas térreas, sobrados, condomínios horizontais, barracões, barracos ou assemelhados destinados à moradia e plurifamiliares edifícios de apartamento em geral, apart hotéis e assemelhados com cozinha própria nos apartamentos que exijam a intervenção do CBMMG através de guarnição(ões) de combate a incêndio, com a finalidade de extinguir o fogo; controlando perigos de novas explosões; proteger a vida de possíveis vítimas; e, preservar possíveis vestígios/indícios de crimes.",
