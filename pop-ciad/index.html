@@ -11,7 +11,7 @@
          * Define o layout geral da página, fontes e cores de fundo.
          */
         body {
-            background-color: #f1e9e2;
+            background-color: #ffffff;
             padding: 20px;
             display: flex;
             min-height: 100vh;
@@ -61,8 +61,8 @@
         }
         
         #guidance {
-            background-color: #f1e9e2;
-            border-left: 4px solid #f47920;
+            background-color: #f5f5f5;
+            border-left: 4px solid #c41e3a;
             padding: 15px;
             margin: 15px 0;
             border-radius: 0 5px 5px 0;
@@ -83,7 +83,7 @@
         .nav-link:hover, .nav-link.active {
             color: white;
             background-color: #606a70;
-            border-left: 4px solid #f47920;
+            border-left: 4px solid #c41e3a;
         }
         
         .nav-link i {
@@ -91,6 +91,11 @@
             width: 20px;
             text-align: center;
         }
+
+	.div-invisivel {
+	  display: none;
+	}
+
         
         /* * Estilos dos Botões de Opção e Voltar
          * Define a aparência dos botões de interação.
@@ -327,7 +332,7 @@
                     <a class="nav-link" href="#" data-target="informacoes">
                         <i class="bi bi-info-circle"></i> Orientações e Informações</a>
                 </li>
-                <!-- <li class="nav-item">
+              <!--  <li class="nav-item">
                     <a class="nav-link" href="#" data-target="saved-calls">
                         <i class="bi bi-archive"></i> Chamadas Salvas</a>
                 </li> -->
@@ -351,10 +356,16 @@
                             <!-- O conteúdo da orientação é preenchido via JavaScript -->
                         </div>
                     </div>
+
+<div class="div-invisivel">
+  Este é o conteúdo que não será exibido.
                     <div id="options" class="d-flex flex-wrap justify-content-center">
                         <!-- Opções de resposta são preenchidas via JavaScript -->
                     </div>
                     <textarea id="notes-area" class="form-control" placeholder="Anotações da chamada (ex: SIT: Fogo na cozinha. VIT: 1 vítima consciente. REF: Prédio azul. TAC: 5 min.)..."></textarea>
+
+</div>
+
                 </div>
 
                 <!-- Conteúdo da Seção de Registro de Chamada no CAD -->
@@ -686,7 +697,7 @@
         const appData = {
             history: [], // Armazena os IDs dos nós visitados para navegação de volta
             pathHistory: [], // Armazena perguntas e respostas para o resumo final
-            currentSection: 'dados-cad' //'triagem', // Seção ativa do menu lateral
+            currentSection: 'triagem', // Seção ativa do menu lateral
             
             // Base de dados dos municípios por grupo SAMU para consulta
             gruposSamu: {
